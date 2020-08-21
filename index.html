@@ -1,51 +1,43 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <!-- import CSS -->
   <link rel="stylesheet" href="./element.css">
   <script src="dist/clipboard.min.js"></script>
 </head>
-<body>
-<div id="app">
-  <el-row :gutter="20">
-    <el-col :span="20">
-      <el-input
-        type="textarea"
-        autosize
-        placeholder="请输入内容"
-        v-model="textarea1">
-      </el-input>
-    </el-col>
-    <el-col :span="4">
-      <el-button type="primary" round @click="onSubmit">转换</el-button>
-    </el-col>
-    </el-col>
-  </el-row>
-  <br>
-     <el-row :gutter="20">
-    <el-col :span="20">
-     <el-input
-        type="textarea"
-        autosize        
-        v-model="result">
-      </el-input>
-    </el-col>
-    <el-col :span="4">
-    
-    </el-col>
-    </el-col>
-  </el-row>
-      
 
-</div>
+<body>
+  <div id="app">
+    <el-row :gutter="20">
+      <el-col :span="20">
+        <el-input type="textarea" autosize autofocus placeholder="请输入内容" v-model="textarea1">
+        </el-input>
+      </el-col>
+      <el-col :span="4">
+        <el-button type="primary" round @click="onSubmit">转换并复制</el-button>
+      </el-col>
+      </el-col>
+    </el-row>
+    <br>
+    <el-row :gutter="20">
+      <el-col :span="20">
+        <el-input type="textarea" autosize v-model="result">
+        </el-input>
+      </el-col>
+      <el-col :span="4">
+        <!--  <el-button type="primary" round @click="copyResult">复制</el-button> -->
+      </el-col>
+      </el-col>
+    </el-row>
+  </div>
 </body>
 <!-- import Vue before Element -->
 <script src="./vue.js"></script>
 <!-- import JavaScript -->
 <script src="./element.js"></script>
 <script>
-
   new Vue({
     el: '#app',
     data: function () {
@@ -54,16 +46,29 @@
         result: ''
       }
     },
+    mounted() {
+      // 记得utools有从主窗口传值到插件的方法，没找到... 只能这样了
+      setTimeout(() => {
+        if (utools.isMacOs()) {
+          utools.simulateKeyboardTap('v', 'command')
+        } else {
+          utools.simulateKeyboardTap('v', 'ctrl')
+        }
+      }, 50)
+    },
     methods: {
-      onSubmit () {
-		if(null == this.textarea1 || '' == this.textarea1){
-			 this.result =''
-			return
-		}
-		if( this.textarea1.indexOf('?') == -1){
-			 this.result ='别闹，没有占位符咋替换呢。默认 "?"，暂不支持其他。'
-			return
-		}
+      copyResult() {
+        utools.copyText(this.result)
+      },
+      onSubmit() {
+        if (null == this.textarea1 || '' == this.textarea1) {
+          this.result = ''
+          return
+        }
+        if (this.textarea1.indexOf('?') == -1) {
+          this.result = '别闹，没有占位符咋替换呢。默认 "?"，暂不支持其他。'
+          return
+        }
         let preparing = this.textarea1.split("==>")[1].split(':')[1]
         let parameters = this.textarea1.split("==>")[2].split(':')[1]
         let rep = new RegExp('\\((.| )+?\\)', 'g');
@@ -79,9 +84,10 @@
         }
         let reg = new RegExp('\" ', "g")
         this.result = result.replace(reg, '')
+        utools.copyText(this.result)
       }
-
     }
   })
 </script>
+
 </html>
