@@ -23,7 +23,7 @@
     <br>
     <el-row :gutter="20">
       <el-col :span="20">
-        <el-input type="textarea" autosize v-model="result">
+        <el-input type="textarea" autosize v-model="result" readonly>
         </el-input>
       </el-col>
       <el-col :span="4">
@@ -47,14 +47,24 @@
       }
     },
     mounted() {
-      // 记得utools有从主窗口传值到插件的方法，没找到... 只能这样了
-      setTimeout(() => {
-        if (utools.isMacOs()) {
-          utools.simulateKeyboardTap('v', 'command')
-        } else {
-          utools.simulateKeyboardTap('v', 'ctrl')
-        }
-      }, 50)
+      let _this = this
+      utools.onPluginEnter(({
+        code,
+        type,
+        payload,
+        optional
+      }) => {
+        _this.textarea1 = ''
+        _this.result = ''
+        // 记得utools有从主窗口传值到插件的方法，没找到... 只能这样了
+        setTimeout(() => {
+          if (utools.isMacOs()) {
+            utools.simulateKeyboardTap('v', 'command')
+          } else {
+            utools.simulateKeyboardTap('v', 'ctrl')
+          }
+        }, 50)
+      })
     },
     methods: {
       copyResult() {
