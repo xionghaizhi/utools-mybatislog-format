@@ -81,19 +81,27 @@
         }
         let preparing = this.textarea1.split("==>")[1].split(':')[1]
         let parameters = this.textarea1.split("==>")[2].split(':')[1]
-        let rep = new RegExp('\\((.| )+?\\)', 'g');
-        let param = parameters.replace(rep, '');
+        let param = parameters
         let array = param.split(',')
         let result = '';
         for (let i of array) {
           if (result !== '') {
-            result = result.replace('?', i)
+            if (i.toLowerCase().indexOf('string') == -1) {
+              result = result.replace('?', i)
+            } else {
+              result = result.replace('?', "'" + i + "'")
+            }
           } else {
-            result = preparing.replace('?', i)
+            if (i.toLowerCase().indexOf('string') == -1) {
+              result = preparing.replace('?', i)
+            } else {
+              result = preparing.replace('?', "'" + i + "'")
+            }
           }
         }
+        let rep = new RegExp('[\(（][^\)）]+[\)）]', 'g');
         let reg = new RegExp('\" ', "g")
-        this.result = result.replace(reg, '')
+        this.result = result.replace(rep, '').replace(reg, '')
         utools.copyText(this.result)
       }
     }
