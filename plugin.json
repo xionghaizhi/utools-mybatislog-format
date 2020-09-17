@@ -6,7 +6,7 @@
 	"author": "xionghaizhi",
 	"preload": "preload.js",
 	"logo": "logo.png",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"development": {
 		"main": "index.html",
 		"preload": "preload.js",

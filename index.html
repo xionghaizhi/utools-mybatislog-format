@@ -12,7 +12,7 @@
   <div id="app">
     <el-row :gutter="20">
       <el-col :span="20">
-        <el-input type="textarea" autosize autofocus placeholder="请输入内容" v-model="textarea1">
+        <el-input type="textarea" autofocus placeholder="请输入内容" v-model="textarea1">
         </el-input>
       </el-col>
       <el-col :span="4">
@@ -80,26 +80,24 @@
           return
         }
         let preparing = this.textarea1.split("==>")[1].split(':')[1]
-        let parameters = this.textarea1.split("==>")[2].split(':')[1]
-        let param = parameters
+        let paramSubscript = this.textarea1.split("==>")[2].indexOf(':')
+        if (paramSubscript == -1) {
+          this.result = '参数解析错误'
+          return
+        }
+        let parameters = this.textarea1.split("==>")[2].substring(paramSubscript + 1, this.textarea1.split("==>")[2]
+          .length)
+        let param = parameters.replace(new RegExp("\\(", 'gm'), '[').replace(new RegExp("\\)", 'gm'), ']');
         let array = param.split(',')
         let result = '';
         for (let i of array) {
           if (result !== '') {
-            if (i.toLowerCase().indexOf('string') == -1) {
-              result = result.replace('?', i)
-            } else {
-              result = result.replace('?', "'" + i + "'")
-            }
+            result = result.replace('?', "'" + i + "'")
           } else {
-            if (i.toLowerCase().indexOf('string') == -1) {
-              result = preparing.replace('?', i)
-            } else {
-              result = preparing.replace('?', "'" + i + "'")
-            }
+            result = preparing.replace('?', "'" + i + "'")
           }
         }
-        let rep = new RegExp('[\(（][^\)）]+[\)）]', 'g');
+        let rep = new RegExp('\\[(.| )+?\\]', 'g');
         let reg = new RegExp('\" ', "g")
         this.result = result.replace(rep, '').replace(reg, '')
         utools.copyText(this.result)
