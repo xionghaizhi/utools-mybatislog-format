@@ -1,4 +1,4 @@
-#### 第三个小版本，肯定会存在各种问题。后期再优化
+#### 第六个小版本，肯定会存在各种问题。后期再优化
 
 > 0.0.2：
 > 
@@ -10,6 +10,13 @@
 > 0.0.4：
 > 
 > 	   字符串类型匹配
+> 0.0.5：
+> 
+> 	   样式修改
+> 0.0.6：
+> 
+> 	   进入插件后自动转换
+>      修改参数前面多余空格
 
 mybatisLog日志格式化参数：
 
@@ -17,4 +24,6 @@ mybatisLog日志格式化参数：
 
 ![](https://img-blog.csdnimg.cn/20200622153111340.png)
 
-![](https://img-blog.csdnimg.cn/20200622153246801.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI4NzczODUx,size_16,color_FFFFFF,t_70)
+![20200924-152429-0986.jpg](https://gitee.com/sunhongchen/picture-bed/raw/master/20200924-152429-0986.jpg)
+
+![20200924-154230-0160.png](https://gitee.com/sunhongchen/picture-bed/raw/master/20200924-154230-0160.png)

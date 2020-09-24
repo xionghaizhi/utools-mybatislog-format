@@ -7,30 +7,36 @@
   <link rel="stylesheet" href="./element.css">
   <script src="dist/clipboard.min.js"></script>
 </head>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  .el-textarea__inner {
+    resize: none;
+    height: 45vh;
+    border-color: #ffffff;
+  }
+
+  .el-textarea__inner:hover {
+    border-color: #ffffff;
+  }
+
+  .el-textarea__inner:focus {
+    border-color: #ffffff;
+  }
+</style>
 
 <body>
-  <div id="app">
-    <el-row :gutter="20">
-      <el-col :span="20">
-        <el-input type="textarea" autofocus placeholder="请输入内容" v-model="textarea1">
-        </el-input>
-      </el-col>
-      <el-col :span="4">
-        <el-button type="primary" round @click="onSubmit">转换并复制</el-button>
-      </el-col>
-      </el-col>
-    </el-row>
-    <br>
-    <el-row :gutter="20">
-      <el-col :span="20">
-        <el-input type="textarea" autosize v-model="result" readonly>
-        </el-input>
-      </el-col>
-      <el-col :span="4">
-        <!--  <el-button type="primary" round @click="copyResult">复制</el-button> -->
-      </el-col>
-      </el-col>
-    </el-row>
+  <div id="app" style="background-color:#ffffff;">
+    <el-input type="textarea" autofocus placeholder="请输入内容" v-model="textarea1" style="height: 50%;">
+    </el-input>
+    <el-divider>
+      <el-button round @click="onSubmit" size="mini" type="primary">转换并复制</el-button>
+    </el-divider>
+    <el-input type="textarea" v-model="result" readonly style="height: 50%;">
+    </el-input>
   </div>
 </body>
 <!-- import Vue before Element -->
@@ -63,6 +69,9 @@
           } else {
             utools.simulateKeyboardTap('v', 'ctrl')
           }
+          setTimeout(() => {
+            this.onSubmit()
+          }, 50);
         }, 50)
       })
     },
@@ -72,35 +81,49 @@
       },
       onSubmit() {
         if (null == this.textarea1 || '' == this.textarea1) {
-          this.result = ''
+          this.result = '没有输入内容哟~'
           return
         }
         if (this.textarea1.indexOf('?') == -1) {
           this.result = '别闹，没有占位符咋替换呢。默认 "?"，暂不支持其他。'
           return
         }
-        let preparing = this.textarea1.split("==>")[1].split(':')[1]
-        let paramSubscript = this.textarea1.split("==>")[2].indexOf(':')
-        if (paramSubscript == -1) {
-          this.result = '参数解析错误'
-          return
+        let preparing;
+        let parameters;
+        if (this.textarea1.indexOf('\n') > -1) {
+          let tempArray = this.textarea1.split('\n');
+          preparing = tempArray[0].split('Preparing:')[1]
+          parameters = tempArray[1].split('Parameters:')[1]
+        } else {
+          preparing = this.textarea1.split("==>")[1].split(':')[1]
+          let paramSubscript = this.textarea1.split("==>")[2].indexOf(':')
+          if (paramSubscript == -1) {
+            this.result = '参数解析错误'
+            return
+          }
+          parameters = this.textarea1.split("==>")[2].substring(paramSubscript + 1, this.textarea1.split("==>")[
+              2]
+            .length)
         }
-        let parameters = this.textarea1.split("==>")[2].substring(paramSubscript + 1, this.textarea1.split("==>")[2]
-          .length)
         let param = parameters.replace(new RegExp("\\(", 'gm'), '[').replace(new RegExp("\\)", 'gm'), ']');
         let array = param.split(',')
         let result = '';
         for (let i of array) {
           if (result !== '') {
-            result = result.replace('?', "'" + i + "'")
+            result = result.replace('?', "'" + i.trim() + "'")
           } else {
-            result = preparing.replace('?', "'" + i + "'")
+            result = preparing.replace('?', "'" + i.trim() + "'")
           }
         }
         let rep = new RegExp('\\[(.| )+?\\]', 'g');
         let reg = new RegExp('\" ', "g")
         this.result = result.replace(rep, '').replace(reg, '')
         utools.copyText(this.result)
+        this.$message({
+          center: true,
+          message: '复制成功',
+          type: 'success'
+        });
       }
     }
   })
