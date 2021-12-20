@@ -2,42 +2,42 @@
 <html>
 
 <head>
-  <meta charset="UTF-8">
-  <!-- import CSS -->
-  <link rel="stylesheet" href="./element.css">
-  <script src="dist/clipboard.min.js"></script>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="./element.css">
+    <script src="dist/clipboard.min.js"></script>
 </head>
 <style>
-  * {
-    margin: 0;
-    padding: 0;
-  }
+    * {
+        margin: 0;
+        padding: 0;
+    }
 
-  .el-textarea__inner {
-    resize: none;
-    height: 45vh;
-    border-color: #ffffff;
-  }
+    .el-textarea__inner {
+        resize: none;
+        height: 45vh;
+        border-color: #ffffff;
+    }
 
-  .el-textarea__inner:hover {
-    border-color: #ffffff;
-  }
+    .el-textarea__inner:hover {
+        border-color: #ffffff;
+    }
 
-  .el-textarea__inner:focus {
-    border-color: #ffffff;
-  }
+    .el-textarea__inner:focus {
+        border-color: #ffffff;
+    }
 </style>
 
 <body>
-  <div id="app" style="background-color:#ffffff;">
+<div id="app" style="background-color:#ffffff;">
     <el-input type="textarea" autofocus placeholder="请输入内容" v-model="textarea1" style="height: 50%;">
     </el-input>
     <el-divider>
-      <el-button round @click="onSubmit" size="mini" type="primary">转换并复制</el-button>
+        <el-button round @click="onSubmit" size="mini" type="primary">转换并复制</el-button>
     </el-divider>
     <el-input type="textarea" v-model="result" readonly style="height: 50%;">
     </el-input>
-  </div>
+</div>
 </body>
 <!-- import Vue before Element -->
 <script src="./vue.js"></script>
@@ -52,14 +52,14 @@
         result: ''
       }
     },
-    mounted() {
+    mounted () {
       let _this = this
       utools.onPluginEnter(({
-        code,
-        type,
-        payload,
-        optional
-      }) => {
+                              code,
+                              type,
+                              payload,
+                              optional
+                            }) => {
         _this.textarea1 = ''
         _this.result = ''
         // 记得utools有从主窗口传值到插件的方法，没找到... 只能这样了
@@ -76,10 +76,10 @@
       })
     },
     methods: {
-      copyResult() {
+      copyResult () {
         utools.copyText(this.result)
       },
-      onSubmit() {
+      onSubmit () {
         if (null == this.textarea1 || '' == this.textarea1) {
           this.result = '没有输入内容哟~'
           return
@@ -104,18 +104,26 @@
           }
           parameters = this.textarea1.split("==>")[2].substring(paramSubscript + 1, this.textarea1.split("==>")[2].length)
         }
-        console.log(parameters)
         if (!parameters) {
           this.result = this.textarea1
         } else {
           let param = parameters.replace(new RegExp("\\(", 'gm'), '[').replace(new RegExp("\\)", 'gm'), ']');
           let array = param.replace(/\[(.| )+?\],/gim, '^').replace(/\[(.| )+?\]/gim, '^').split('^');
           let result = '';
-          for (let i of array) {
+          preparing = preparing.replaceAll('?', '^&^')
+        for (let i of array) {
+          let temp = i.toLowerCase();
+          if (temp.indexOf('[long]') > -1 || temp.indexOf('[integer]') > -1
+            || temp.indexOf('[shot]') > -1 || temp.indexOf('[float]') > -1
+            || temp.indexOf('[double]') > -1 || temp.indexOf('[byte]') > -1) {
+            temp = i.trim();
+          } else {
+            temp = "'" + i.trim() + "'";
+          }
             if (result !== '') {
-              result = result.replace('?', "'" + i.trim() + "'")
+              result = result.replace('^&^', temp)
             } else {
-              result = preparing.replace('?', "'" + i.trim() + "'")
+              result = preparing.replace('^&^', temp)
             }
           }
           let rep = new RegExp('\\[(.| )+?\\]', 'g');
