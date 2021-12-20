@@ -88,6 +88,7 @@
           this.result = '别闹，没有占位符咋替换呢。默认 "?"，暂不支持其他。'
           return
         }
+        this.textarea1 = this.textarea1.replace(/(^\s*)|(\s*$)/g, "")
         let preparing;
         let parameters;
         if (this.textarea1.indexOf('\n') > -1) {
@@ -101,23 +102,26 @@
             this.result = '参数解析错误'
             return
           }
-          parameters = this.textarea1.split("==>")[2].substring(paramSubscript + 1, this.textarea1.split("==>")[
-              2]
-            .length)
+          parameters = this.textarea1.split("==>")[2].substring(paramSubscript + 1, this.textarea1.split("==>")[2].length)
         }
-        let param = parameters.replace(new RegExp("\\(", 'gm'), '[').replace(new RegExp("\\)", 'gm'), ']');
-        let array = param.split(',')
-        let result = '';
-        for (let i of array) {
-          if (result !== '') {
-            result = result.replace('?', "'" + i.trim() + "'")
-          } else {
-            result = preparing.replace('?', "'" + i.trim() + "'")
+        console.log(parameters)
+        if (!parameters) {
+          this.result = this.textarea1
+        } else {
+          let param = parameters.replace(new RegExp("\\(", 'gm'), '[').replace(new RegExp("\\)", 'gm'), ']');
+          let array = param.replace(/\[(.| )+?\],/gim, '^').replace(/\[(.| )+?\]/gim, '^').split('^');
+          let result = '';
+          for (let i of array) {
+            if (result !== '') {
+              result = result.replace('?', "'" + i.trim() + "'")
+            } else {
+              result = preparing.replace('?', "'" + i.trim() + "'")
+            }
           }
+          let rep = new RegExp('\\[(.| )+?\\]', 'g');
+          let reg = new RegExp('\" ', "g")
+          this.result = result.replace(rep, '').replace(reg, '')
         }
-        let rep = new RegExp('\\[(.| )+?\\]', 'g');
-        let reg = new RegExp('\" ', "g")
-        this.result = result.replace(rep, '').replace(reg, '')
         utools.copyText(this.result)
         this.$message({
           center: true,
