@@ -20,8 +20,9 @@
 			"mybatis",
 			"mybatisLog",
 			{
-				"type": "over",
+				"type": "regex",
 				"label": "mybatisLog格式化",
+				"match": "/=+./i",
 				"minLength": 5
 			}
 		]

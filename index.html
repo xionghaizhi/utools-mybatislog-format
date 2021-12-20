@@ -111,15 +111,15 @@
           let array = param.replace(/\[(.| )+?\],/gim, '^').replace(/\[(.| )+?\]/gim, '^').split('^');
           let result = '';
           preparing = preparing.replaceAll('?', '^&^')
-        for (let i of array) {
-          let temp = i.toLowerCase();
-          if (temp.indexOf('[long]') > -1 || temp.indexOf('[integer]') > -1
-            || temp.indexOf('[shot]') > -1 || temp.indexOf('[float]') > -1
-            || temp.indexOf('[double]') > -1 || temp.indexOf('[byte]') > -1) {
-            temp = i.trim();
-          } else {
-            temp = "'" + i.trim() + "'";
-          }
+          for (let i of array) {
+            let temp = i.toLowerCase();
+            if (temp.indexOf('[long]') > -1 || temp.indexOf('[integer]') > -1
+              || temp.indexOf('[shot]') > -1 || temp.indexOf('[float]') > -1
+              || temp.indexOf('[double]') > -1 || temp.indexOf('[byte]') > -1) {
+              temp = i.trim();
+            } else {
+              temp = "'" + i.trim() + "'";
+            }
             if (result !== '') {
               result = result.replace('^&^', temp)
             } else {
