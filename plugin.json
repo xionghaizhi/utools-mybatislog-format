@@ -6,7 +6,7 @@
 	"author": "xionghaizhi",
 	"preload": "preload.js",
 	"logo": "logo.png",
-	"version": "0.0.6",
+	"version": "0.1.0",
 	"development": {
 		"main": "index.html",
 		"preload": "preload.js",
@@ -14,15 +14,14 @@
 
 	},
 	"features": [{
-		"code": "mybaitsLog",
-		"explain": "mybaitsLog",
+		"code": "mybatisLog",
+		"explain": "mybatisLog",
 		"cmds": [
-			"mybaits",
-			"mybaitsLog",
+			"mybatis",
+			"mybatisLog",
 			{
-				"type": "regex",
+				"type": "over",
 				"label": "mybatisLog格式化",
-				"match": "/[a-zA-Z]/",
 				"minLength": 5
 			}
 		]
