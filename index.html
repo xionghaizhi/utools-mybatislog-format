@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <!-- import CSS -->
-    <link rel="stylesheet" href="./element.css">
-    <script src="dist/clipboard.min.js"></script>
+    <link rel="stylesheet" href="css/element.css">
+<!--    <script src="dist/clipboard.min.js"></script>-->
 </head>
 <style>
     * {
@@ -40,9 +40,10 @@
 </div>
 </body>
 <!-- import Vue before Element -->
-<script src="./vue.js"></script>
+<script src="js/vue.js"></script>
 <!-- import JavaScript -->
-<script src="./element.js"></script>
+<script src="js/element.js"></script>
+<script src="js/sql-formatter.js"></script>
 <script>
   new Vue({
     el: '#app',
@@ -129,6 +130,7 @@
           let rep = new RegExp('\\[(.| )+?\\]', 'g');
           let reg = new RegExp('\" ', "g")
           this.result = result.replace(rep, '').replace(reg, '')
+          this.result = sqlFormatter.format(this.result)
         }
         utools.copyText(this.result)
         this.$message({
