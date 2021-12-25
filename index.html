@@ -87,6 +87,12 @@
         }
         if (this.textarea1.indexOf('?') == -1) {
           this.result = sqlFormatter.format(this.textarea1)
+          utools.copyText(this.result)
+          this.$message({
+            center: true,
+            message: '复制成功',
+            type: 'success'
+          });
           return
         }
         this.textarea1 = this.textarea1.replace(/(^\s*)|(\s*$)/g, "")
