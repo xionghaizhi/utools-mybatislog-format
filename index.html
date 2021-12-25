@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <!-- import CSS -->
     <link rel="stylesheet" href="css/element.css">
-<!--    <script src="dist/clipboard.min.js"></script>-->
+    <!--    <script src="dist/clipboard.min.js"></script>-->
 </head>
 <style>
     * {
@@ -86,7 +86,7 @@
           return
         }
         if (this.textarea1.indexOf('?') == -1) {
-          this.result = '别闹，没有占位符咋替换呢。默认 "?"，暂不支持其他。'
+          this.result = sqlFormatter.format(this.textarea1)
           return
         }
         this.textarea1 = this.textarea1.replace(/(^\s*)|(\s*$)/g, "")
@@ -94,8 +94,8 @@
         let parameters;
         if (this.textarea1.indexOf('\n') > -1) {
           let tempArray = this.textarea1.split('\n');
-          preparing = tempArray[0].split('Preparing:')[1]
-          parameters = tempArray[1].split('Parameters:')[1]
+          preparing = tempArray[0].split(/preparing:/gim)[1]
+          parameters = tempArray[1].split(/Parameters:/gim)[1]
         } else {
           preparing = this.textarea1.split("==>")[1].split(':')[1]
           let paramSubscript = this.textarea1.split("==>")[2].indexOf(':')
@@ -109,7 +109,12 @@
           this.result = this.textarea1
         } else {
           let param = parameters.replace(new RegExp("\\(", 'gm'), '[').replace(new RegExp("\\)", 'gm'), ']');
-          let array = param.replace(/\[(.| )+?\],/gim, '^').replace(/\[(.| )+?\]/gim, '^').split('^');
+          let array;
+          if (/\[(.| )+?\],/gim.test(param)) {
+            array = param.replace(/\[(.| )+?\],/gim, '^').replace(/\[(.| )+?\]/gim, '^').split('^');
+          } else {
+            array = param.split(',')
+          }
           let result = '';
           preparing = preparing.replaceAll('?', '^&^')
           for (let i of array) {
