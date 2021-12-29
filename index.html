@@ -34,6 +34,15 @@
     </el-input>
     <el-divider>
         <el-button round @click="onSubmit" size="mini" type="primary">转换并复制</el-button>
+        <el-select v-model="sqlLanguage" placeholder="sql方言" @change="sqlLanguageChange" size="mini"
+                   style="width: 7rem">
+            <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+            </el-option>
+        </el-select>
     </el-divider>
     <el-input type="textarea" v-model="result" readonly style="height: 50%;">
     </el-input>
@@ -50,7 +59,50 @@
     data: function () {
       return {
         textarea1: '',
-        result: ''
+        result: '',
+        sqlLanguage: 'mysql',
+        options: [
+          {
+            value: 'mysql',
+            label: 'mysql'
+          },
+          {
+            value: 'db2',
+            label: 'db2'
+          },
+          {
+            value: 'sql',
+            label: 'sql'
+          },
+          {
+            value: 'mariadb',
+            label: 'mariadb'
+          },
+          {
+            value: 'n1ql',
+            label: 'n1ql'
+          },
+          {
+            value: 'plsql',
+            label: 'plsql'
+          },
+          {
+            value: 'postgresql',
+            label: 'postgresql'
+          },
+          {
+            value: 'redshift',
+            label: 'redshift'
+          },
+          {
+            value: 'spark',
+            label: 'spark'
+          },
+          {
+            value: 'tsql',
+            label: 'tsql'
+          },
+        ]
       }
     },
     mounted () {
@@ -77,6 +129,9 @@
       })
     },
     methods: {
+      sqlLanguageChange (value) {
+        this.onSubmit()
+      },
       copyResult () {
         utools.copyText(this.result)
       },
@@ -86,7 +141,9 @@
           return
         }
         if (this.textarea1.indexOf('?') == -1) {
-          this.result = sqlFormatter.format(this.textarea1)
+          this.result = sqlFormatter.format(this.textarea1, {
+            language: this.sqlLanguage
+          })
           utools.copyText(this.result)
           this.$message({
             center: true,
@@ -141,7 +198,9 @@
           let rep = new RegExp('\\[(.| )+?\\]', 'g');
           let reg = new RegExp('\" ', "g")
           this.result = result.replace(rep, '').replace(reg, '')
-          this.result = sqlFormatter.format(this.result)
+          this.result = sqlFormatter.format(this.result, {
+            language: this.sqlLanguage
+          })
         }
         utools.copyText(this.result)
         this.$message({
