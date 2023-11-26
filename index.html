@@ -2,51 +2,46 @@
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    <!-- import CSS -->
-    <link rel="stylesheet" href="css/element.css">
-    <!--    <script src="dist/clipboard.min.js"></script>-->
+  <meta charset="UTF-8">
+  <!-- import CSS -->
+  <link rel="stylesheet" href="css/element.css">
+  <!--    <script src="dist/clipboard.min.js"></script>-->
 </head>
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-    }
+  * {
+    margin: 0;
+    padding: 0;
+  }
 
-    .el-textarea__inner {
-        resize: none;
-        height: 45vh;
-        border-color: #ffffff;
-    }
+  .el-textarea__inner {
+    resize: none;
+    height: 45vh;
+    border-color: #ffffff;
+  }
 
-    .el-textarea__inner:hover {
-        border-color: #ffffff;
-    }
+  .el-textarea__inner:hover {
+    border-color: #ffffff;
+  }
 
-    .el-textarea__inner:focus {
-        border-color: #ffffff;
-    }
+  .el-textarea__inner:focus {
+    border-color: #ffffff;
+  }
 </style>
 
 <body>
-<div id="app" style="background-color:#ffffff;">
+  <div id="app" style="background-color:#ffffff;">
     <el-input type="textarea" autofocus placeholder="请输入内容" v-model="textarea1" style="height: 50%;">
     </el-input>
     <el-divider>
-        <el-button round @click="onSubmit" size="mini" type="primary">转换并复制</el-button>
-        <el-select v-model="sqlLanguage" placeholder="sql方言" @change="sqlLanguageChange" size="mini"
-                   style="width: 7rem">
-            <el-option
-                    v-for="item in options"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-            </el-option>
-        </el-select>
+      <el-button round @click="onSubmit" size="mini" type="primary">转换并复制</el-button>
+      <el-select v-model="sqlLanguage" placeholder="sql方言" @change="sqlLanguageChange" size="mini" style="width: 7rem">
+        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+        </el-option>
+      </el-select>
     </el-divider>
     <el-input type="textarea" v-model="result" readonly style="height: 50%;">
     </el-input>
-</div>
+  </div>
 </body>
 <!-- import Vue before Element -->
 <script src="js/vue.js"></script>
@@ -105,14 +100,14 @@
         ]
       }
     },
-    mounted () {
+    mounted() {
       let _this = this
       utools.onPluginEnter(({
-                              code,
-                              type,
-                              payload,
-                              optional
-                            }) => {
+        code,
+        type,
+        payload,
+        optional
+      }) => {
         _this.textarea1 = ''
         _this.result = ''
         // 记得utools有从主窗口传值到插件的方法，没找到... 只能这样了
@@ -129,13 +124,13 @@
       })
     },
     methods: {
-      sqlLanguageChange (value) {
+      sqlLanguageChange(value) {
         this.onSubmit()
       },
-      copyResult () {
+      copyResult() {
         utools.copyText(this.result)
       },
-      onSubmit () {
+      onSubmit() {
         if (null == this.textarea1 || '' == this.textarea1) {
           this.result = '没有输入内容哟~'
           return
@@ -157,8 +152,13 @@
         let parameters;
         if (this.textarea1.indexOf('\n') > -1) {
           let tempArray = this.textarea1.split('\n');
-          preparing = tempArray[0].split(/preparing:/gim)[1]
-          parameters = tempArray[1].split(/Parameters:/gim)[1]
+          if (this.textarea1.toLowerCase().indexOf('preparing') > -1) {
+            preparing = tempArray[0].split(/preparing:/gim)[1]
+            parameters = tempArray[1].split(/Parameters:/gim)[1]
+          } else {
+            preparing = tempArray[0].split(/Statement:/gim)[1]
+            parameters = tempArray[1].split(/Parameters:/gim)[1]
+          }
         } else {
           preparing = this.textarea1.split("==>")[1].split(':')[1]
           let paramSubscript = this.textarea1.split("==>")[2].indexOf(':')
@@ -171,34 +171,26 @@
         if (!parameters) {
           this.result = this.textarea1
         } else {
-          let param = parameters.replace(new RegExp("\\(", 'gm'), '[').replace(new RegExp("\\)", 'gm'), ']');
-          let array;
-          if (/\[(.| )+?\],/gim.test(param)) {
-            array = param.replace(/\[(.| )+?\],/gim, '^').replace(/\[(.| )+?\]/gim, '^').split('^');
-          } else {
-            array = param.split(',')
-          }
-          let result = '';
-          preparing = preparing.replaceAll('?', '^&^')
-          for (let i of array) {
-            let temp = i.toLowerCase();
-            if (temp.indexOf('[long]') > -1 || temp.indexOf('[integer]') > -1
-              || temp.indexOf('[shot]') > -1 || temp.indexOf('[float]') > -1
-              || temp.indexOf('[double]') > -1 || temp.indexOf('[byte]') > -1) {
-              temp = i.trim();
-            } else {
-              temp = "'" + i.trim() + "'";
+          let preparingRegex = /Preparing:(.*)/;
+          let parametersRegex = /Parameters:(.*)/;
+          let log = this.textarea1.replace(/`/g, "\\`");
+          let sql = log.match(preparingRegex)[1];
+          let parameters = log.match(parametersRegex)[1].split(',').map(param => param.trim().split('(')[0]);
+
+          let formattedSql = sql.replace(/\?/g, function () {
+            let param = parameters.shift();
+            // 如果参数是字符串，我们需要将其包裹在引号中
+            if (!isNumeric(param)) {
+              param = `'${param}'`;
             }
-            if (result !== '') {
-              result = result.replace('^&^', temp)
-            } else {
-              result = preparing.replace('^&^', temp)
-            }
+            return param;
+          });
+
+          function isNumeric(n) {
+            return !isNaN(parseFloat(n)) && isFinite(n) ;
           }
           let rep = new RegExp('\\[(.| )+?\\]', 'g');
-          let reg = new RegExp('\" ', "g")
-          this.result = result.replace(rep, '').replace(reg, '')
-          this.result = sqlFormatter.format(this.result, {
+          this.result = sqlFormatter.format(formattedSql.replace(rep, '').replace(/\\`/g, '`'), {
             language: this.sqlLanguage
           })
         }
