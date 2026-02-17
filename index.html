@@ -5,7 +5,6 @@
   <meta charset="UTF-8">
   <!-- import CSS -->
   <link rel="stylesheet" href="css/element.css">
-  <!--    <script src="dist/clipboard.min.js"></script>-->
 </head>
 <style>
   * {
@@ -34,7 +33,7 @@
     </el-input>
     <el-divider>
       <el-button round @click="onSubmit" size="mini" type="primary">转换并复制</el-button>
-      <el-select v-model="sqlLanguage" placeholder="sql方言" @change="sqlLanguageChange" size="mini" style="width: 7rem">
+      <el-select v-model="sqlLanguage" placeholder="sql方言" @change="sqlLanguageChange" size="mini" style="width: 7rem" filterable>
         <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
         </el-option>
       </el-select>
@@ -47,8 +46,33 @@
 <script src="js/vue.js"></script>
 <!-- import JavaScript -->
 <script src="js/element.js"></script>
-<script src="js/sql-formatter.js"></script>
+<script src="js/sql-formatter.min.js"></script>
 <script>
+  // 支持的 SQL 方言列表（sql-formatter 15.x 支持 21 种）
+  const SUPPORTED_DIALECTS = [
+    { value: 'sql', label: 'Standard SQL' },
+    { value: 'mysql', label: 'MySQL' },
+    { value: 'mariadb', label: 'MariaDB' },
+    { value: 'postgresql', label: 'PostgreSQL' },
+    { value: 'plsql', label: 'Oracle PL/SQL' },
+    { value: 'tsql', label: 'SQL Server (T-SQL)' },
+    { value: 'transactsql', label: 'TransactSQL' },
+    { value: 'db2', label: 'DB2' },
+    { value: 'db2i', label: 'DB2 for i' },
+    { value: 'sqlite', label: 'SQLite' },
+    { value: 'hive', label: 'Apache Hive' },
+    { value: 'spark', label: 'Apache Spark SQL' },
+    { value: 'bigquery', label: 'Google BigQuery' },
+    { value: 'snowflake', label: 'Snowflake' },
+    { value: 'redshift', label: 'Amazon Redshift' },
+    { value: 'clickhouse', label: 'ClickHouse' },
+    { value: 'duckdb', label: 'DuckDB' },
+    { value: 'tidb', label: 'TiDB' },
+    { value: 'trino', label: 'Trino' },
+    { value: 'n1ql', label: 'Couchbase N1QL' },
+    { value: 'singlestoredb', label: 'SingleStoreDB' },
+  ];
+
   new Vue({
     el: '#app',
     data: function () {
@@ -56,48 +80,7 @@
         textarea1: '',
         result: '',
         sqlLanguage: 'mysql',
-        options: [
-          {
-            value: 'mysql',
-            label: 'mysql'
-          },
-          {
-            value: 'db2',
-            label: 'db2'
-          },
-          {
-            value: 'sql',
-            label: 'sql'
-          },
-          {
-            value: 'mariadb',
-            label: 'mariadb'
-          },
-          {
-            value: 'n1ql',
-            label: 'n1ql'
-          },
-          {
-            value: 'plsql',
-            label: 'plsql'
-          },
-          {
-            value: 'postgresql',
-            label: 'postgresql'
-          },
-          {
-            value: 'redshift',
-            label: 'redshift'
-          },
-          {
-            value: 'spark',
-            label: 'spark'
-          },
-          {
-            value: 'tsql',
-            label: 'tsql'
-          },
-        ]
+        options: SUPPORTED_DIALECTS
       }
     },
     mounted() {
@@ -110,7 +93,6 @@
       }) => {
         _this.textarea1 = ''
         _this.result = ''
-        // 记得utools有从主窗口传值到插件的方法，没找到... 只能这样了
         setTimeout(() => {
           if (utools.isMacOs()) {
             utools.simulateKeyboardTap('v', 'command')
@@ -130,11 +112,139 @@
       copyResult() {
         utools.copyText(this.result)
       },
+      
+      /**
+       * 解析 MyBatis 参数
+       * 格式示例: value1(Type1), value2(Type2), ...
+       * 改进：正确处理包含逗号的参数值（如日期字符串）和空字符串参数
+       */
+      parseParameters(paramStr) {
+        if (!paramStr) return [];
+        
+        const params = [];
+        // 使用正则匹配参数，格式: value(type)
+        // 特殊情况：空字符串参数格式为 (Type)
+        const paramRegex = /(?:^|,\s*)([^,()]*?)\(([^)]+)\)/g;
+        let match;
+        
+        while ((match = paramRegex.exec(paramStr)) !== null) {
+          let value = match[1].trim();
+          let type = match[2].trim();
+          params.push({ value, type });
+        }
+        
+        // 如果正则没有匹配到，尝试旧的分割方式作为后备
+        if (params.length === 0) {
+          const parts = paramStr.split(',');
+          for (let part of parts) {
+            const trimmed = part.trim();
+            const parenIdx = trimmed.lastIndexOf('(');
+            if (parenIdx > 0) {
+              params.push({
+                value: trimmed.substring(0, parenIdx).trim(),
+                type: trimmed.substring(parenIdx + 1, trimmed.length - 1).trim()
+              });
+            } else if (parenIdx === 0) {
+              // 空字符串参数: (Type)
+              params.push({
+                value: '',
+                type: trimmed.substring(1, trimmed.length - 1).trim()
+              });
+            } else {
+              params.push({ value: trimmed, type: 'Unknown' });
+            }
+          }
+        }
+        
+        return params;
+      },
+      
+      /**
+       * 根据参数值和类型格式化为 SQL 值
+       * 修复：正确处理 null 值、空字符串、日期类型等
+       */
+      formatParamValue(value, type) {
+        const lowerType = type.toLowerCase();
+        const lowerValue = value.toLowerCase();
+        
+        // 处理 null 值 - 修复：null 应该是 NULL 而不是 'null'
+        if (lowerValue === 'null') {
+          return 'NULL';
+        }
+        
+        // 处理空字符串
+        if (value === '') {
+          return "''";
+        }
+        
+        // 数字类型：Integer, Long, Double, Float, BigDecimal, BigInteger, Short, Byte, Number
+        const numericTypes = ['integer', 'int', 'long', 'bigint', 'double', 'float', 'decimal', 'bigdecimal', 'biginteger', 'short', 'byte', 'number', 'numeric'];
+        if (numericTypes.some(t => lowerType.includes(t))) {
+          // 验证是否为有效数字
+          if (!isNaN(parseFloat(value)) && isFinite(value)) {
+            return value;
+          }
+        }
+        
+        // 布尔类型
+        if (lowerType.includes('boolean') || lowerType.includes('bool')) {
+          if (lowerValue === 'true' || lowerValue === 'false') {
+            return lowerValue.toUpperCase();
+          }
+        }
+        
+        // 字符串类型：String, Varchar, Char, Text, Clob 等
+        const stringTypes = ['string', 'varchar', 'char', 'text', 'clob', 'nvarchar', 'nchar'];
+        if (stringTypes.some(t => lowerType.includes(t))) {
+          // 转义单引号 - 修复：O'Brien -> 'O''Brien'
+          const escaped = value.replace(/'/g, "''");
+          return `'${escaped}'`;
+        }
+        
+        // 日期类型：Date, Time, Timestamp, DateTime
+        const dateTypes = ['date', 'time', 'timestamp', 'datetime'];
+        if (dateTypes.some(t => lowerType.includes(t))) {
+          // 日期值通常是字符串格式
+          if (value !== '' && lowerValue !== 'null') {
+            const escaped = value.replace(/'/g, "''");
+            return `'${escaped}'`;
+          }
+          return 'NULL';
+        }
+        
+        // 字节数组：Blob, Binary
+        const binaryTypes = ['blob', 'binary', 'varbinary', 'bytea'];
+        if (binaryTypes.some(t => lowerType.includes(t))) {
+          // 二进制数据通常以十六进制或特殊格式显示
+          return `'${value}'`;
+        }
+        
+        // 枚举类型 - 通常作为字符串处理
+        if (lowerType.includes('enum')) {
+          const escaped = value.replace(/'/g, "''");
+          return `'${escaped}'`;
+        }
+        
+        // 默认情况：如果看起来像数字，不加引号；否则加引号
+        if (!isNaN(parseFloat(value)) && isFinite(value) && value.trim() !== '') {
+          // 检查是否是纯数字（不是科学计数法或特殊格式）
+          if (/^-?\d+\.?\d*$/.test(value.trim())) {
+            return value;
+          }
+        }
+        
+        // 其他情况，作为字符串处理
+        const escaped = value.replace(/'/g, "''");
+        return `'${escaped}'`;
+      },
+      
       onSubmit() {
         if (null == this.textarea1 || '' == this.textarea1) {
           this.result = '没有输入内容哟~'
           return
         }
+        
+        // 如果没有问号占位符，直接格式化
         if (this.textarea1.indexOf('?') == -1) {
           this.result = sqlFormatter.format(this.textarea1, {
             language: this.sqlLanguage
@@ -147,53 +257,70 @@
           });
           return
         }
+        
         this.textarea1 = this.textarea1.replace(/(^\s*)|(\s*$)/g, "")
-        let preparing;
-        let parameters;
-        if (this.textarea1.indexOf('\n') > -1) {
-          let tempArray = this.textarea1.split('\n');
-          if (this.textarea1.toLowerCase().indexOf('preparing') > -1) {
-            preparing = tempArray[0].split(/preparing:/gim)[1]
-            parameters = tempArray[1].split(/Parameters:/gim)[1]
-          } else {
-            preparing = tempArray[0].split(/Statement:/gim)[1]
-            parameters = tempArray[1].split(/Parameters:/gim)[1]
+        
+        let sql = '';
+        let paramStr = '';
+        
+        // 多种格式匹配
+        // 格式1: Preparing: xxx \n Parameters: xxx
+        // 格式2: ==>  Preparing: xxx \n ==> Parameters: xxx
+        // 格式3: 单行格式
+        
+        let preparingMatch = this.textarea1.match(/Preparing:\s*(.+?)(?=\n.*Parameters:|$)/is);
+        let parametersMatch = this.textarea1.match(/Parameters:\s*(.+?)$/is);
+        
+        if (preparingMatch) {
+          sql = preparingMatch[1].trim();
+          // 清理可能的日志前缀
+          if (sql.includes('==>')) {
+            sql = sql.split('==>')[0].trim();
           }
-        } else {
-          preparing = this.textarea1.split("==>")[1].split(':')[1]
-          let paramSubscript = this.textarea1.split("==>")[2].indexOf(':')
-          if (paramSubscript == -1) {
-            this.result = '参数解析错误'
-            return
-          }
-          parameters = this.textarea1.split("==>")[2].substring(paramSubscript + 1, this.textarea1.split("==>")[2].length)
         }
-        if (!parameters) {
-          this.result = this.textarea1
-        } else {
-          let preparingRegex = /Preparing:(.*)/;
-          let parametersRegex = /Parameters:(.*)/;
-          let log = this.textarea1.replace(/`/g, "\\`");
-          let sql = log.match(preparingRegex)[1];
-          let parameters = log.match(parametersRegex)[1].split(',').map(param => param.trim().split('(')[0]);
-
-          let formattedSql = sql.replace(/\?/g, function () {
-            let param = parameters.shift();
-            // 如果参数是字符串，我们需要将其包裹在引号中
-            if (!isNumeric(param)) {
-              param = `'${param}'`;
-            }
-            return param;
-          });
-
-          function isNumeric(n) {
-            return !isNaN(parseFloat(n)) && isFinite(n) ;
+        
+        if (parametersMatch) {
+          paramStr = parametersMatch[1].trim();
+          // 清理可能的日志前缀
+          if (paramStr.includes('==>')) {
+            paramStr = paramStr.split('==>')[0].trim();
           }
-          let rep = new RegExp('\\[(.| )+?\\]', 'g');
-          this.result = sqlFormatter.format(formattedSql.replace(rep, '').replace(/\\`/g, '`'), {
+        }
+        
+        if (!sql) {
+          this.result = '无法解析 SQL 语句'
+          return
+        }
+        
+        if (!paramStr) {
+          // 没有参数，直接格式化
+          this.result = sqlFormatter.format(sql, {
+            language: this.sqlLanguage
+          })
+        } else {
+          // 解析参数
+          const params = this.parseParameters(paramStr);
+          
+          // 替换占位符
+          let paramIndex = 0;
+          let self = this;
+          let formattedSql = sql.replace(/\?/g, function () {
+            if (paramIndex < params.length) {
+              const param = params[paramIndex++];
+              return self.formatParamValue(param.value, param.type);
+            }
+            return '?';
+          });
+          
+          // 清理多余的方括号（某些日志格式可能有）
+          formattedSql = formattedSql.replace(/\[(.+?)\]/g, '$1');
+          
+          // 格式化 SQL
+          this.result = sqlFormatter.format(formattedSql, {
             language: this.sqlLanguage
           })
         }
+        
         utools.copyText(this.result)
         this.$message({
           center: true,

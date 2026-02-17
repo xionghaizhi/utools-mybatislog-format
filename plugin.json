@@ -1,17 +1,16 @@
 {
 	"pluginName": "mybatisLog格式化",
 	"description": "将idea开发工具中的sql日志自动拼接参数",
-	"main": "index.html",
 	"homepage": "https://xionghaizhi.github.io",
 	"author": "xionghaizhi",
+	"main": "index.html",
 	"preload": "preload.js",
 	"logo": "logo.png",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"development": {
 		"main": "index.html",
 		"preload": "preload.js",
 		"logo": "logo.png"
-
 	},
 	"features": [{
 		"code": "mybatisLog",
