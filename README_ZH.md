@@ -1,4 +1,4 @@
-# MyBatis Log 格式化工具
+# MyBatis Log 格式化工具 ![下载量](https://img.shields.io/badge/utools%20download-24267-blue)
 
 将 MyBatis SQL 日志（来自 IDEA 控制台、服务器日志等）自动拼接参数，生成可直接执行的 SQL 语句。
 
@@ -12,8 +12,8 @@
 - 自动转义单引号
 - 转换后自动复制到剪贴板
 
-![下载量](https://img.shields.io/badge/utools%20download-24267-blue)
 
+![Downloads](img/img.png)
 ## 支持的数据库方言（21种）
 
 | 数据库 | 方言值 |

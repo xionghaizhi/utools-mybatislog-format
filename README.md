@@ -1,4 +1,4 @@
-# MyBatis Log Formatter
+# MyBatis Log Formatter ![下载量](https://img.shields.io/badge/utools%20download-24267-blue)
 
 Automatically concatenates parameters from MyBatis SQL logs (from IDEA console, server logs, etc.) to generate directly executable SQL statements.
 
@@ -13,7 +13,7 @@ Automatically concatenates parameters from MyBatis SQL logs (from IDEA console, 
 - Auto-copy converted SQL to clipboard
 
 ![Downloads](https://img.shields.io/badge/utools%20download-24267-blue)
-
+![Downloads](img/img.png)
 ## Supported Database Dialects (21)
 
 | Database | Dialect Value |

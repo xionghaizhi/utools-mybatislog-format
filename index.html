@@ -122,37 +122,46 @@
         if (!paramStr) return [];
         
         const params = [];
-        // 使用正则匹配参数，格式: value(type)
-        // 特殊情况：空字符串参数格式为 (Type)
-        const paramRegex = /(?:^|,\s*)([^,()]*?)\(([^)]+)\)/g;
-        let match;
-        
-        while ((match = paramRegex.exec(paramStr)) !== null) {
-          let value = match[1].trim();
-          let type = match[2].trim();
-          params.push({ value, type });
-        }
-        
-        // 如果正则没有匹配到，尝试旧的分割方式作为后备
-        if (params.length === 0) {
-          const parts = paramStr.split(',');
-          for (let part of parts) {
-            const trimmed = part.trim();
-            const parenIdx = trimmed.lastIndexOf('(');
-            if (parenIdx > 0) {
-              params.push({
-                value: trimmed.substring(0, parenIdx).trim(),
-                type: trimmed.substring(parenIdx + 1, trimmed.length - 1).trim()
-              });
-            } else if (parenIdx === 0) {
-              // 空字符串参数: (Type)
-              params.push({
-                value: '',
-                type: trimmed.substring(1, trimmed.length - 1).trim()
-              });
-            } else {
-              params.push({ value: trimmed, type: 'Unknown' });
+        const parts = [];
+        let current = '';
+        let depth = 0;
+
+        // 按“顶层逗号”分段，避免正则部分匹配导致静默丢参
+        for (const ch of paramStr) {
+          if (ch === ',' && depth === 0) {
+            if (current.trim() !== '') {
+              parts.push(current.trim());
             }
+            current = '';
+            continue;
+          }
+          current += ch;
+          if (ch === '(') {
+            depth++;
+          } else if (ch === ')' && depth > 0) {
+            depth--;
+          }
+        }
+        if (current.trim() !== '') {
+          parts.push(current.trim());
+        }
+
+        for (let part of parts) {
+          const parenIdx = part.lastIndexOf('(');
+          const endsWithParen = part.endsWith(')');
+          if (parenIdx > 0 && endsWithParen) {
+            params.push({
+              value: part.substring(0, parenIdx).trim(),
+              type: part.substring(parenIdx + 1, part.length - 1).trim()
+            });
+          } else if (parenIdx === 0 && endsWithParen) {
+            // 空字符串参数: (Type)
+            params.push({
+              value: '',
+              type: part.substring(1, part.length - 1).trim()
+            });
+          } else {
+            params.push({ value: part.trim(), type: 'Unknown' });
           }
         }
         
