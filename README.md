@@ -1,19 +1,23 @@
-# MyBatis Log 格式化工具
+# MyBatis Log Formatter
 
-将 IDEA 开发工具中的 MyBatis SQL 日志自动拼接参数，生成可直接执行的 SQL 语句。
+Automatically concatenates parameters from MyBatis SQL logs in IDEA to generate directly executable SQL statements.
 
-## 功能特点
+[中文版](./README_ZH.md)
 
-- 自动解析 MyBatis 日志中的 SQL 和参数
-- 支持多种数据库方言格式化
-- 正确处理 NULL 值、空字符串、日期类型等
-- 自动转义单引号
-- 转换后自动复制到剪贴板
+## Features
 
-## 支持的数据库方言（21种）
+- Automatically parse SQL and parameters from MyBatis logs
+- Support 21 database dialect formatters
+- Properly handle NULL values, empty strings, date types, etc.
+- Auto-escape single quotes
+- Auto-copy converted SQL to clipboard
 
-| 数据库 | 方言值 |
-|--------|--------|
+![Downloads](img/img.png)
+
+## Supported Database Dialects (21)
+
+| Database | Dialect Value |
+|---------|--------------|
 | Standard SQL | sql |
 | MySQL | mysql |
 | MariaDB | mariadb |
@@ -34,21 +38,21 @@
 | Couchbase N1QL | n1ql |
 | SingleStoreDB | singlestoredb |
 
-## 使用方法
+## Usage
 
-1. 从 IDEA 控制台复制 MyBatis 日志
-2. 在 uTools 中输入 `mybatis` 或 `mybatisLog`
-3. 日志会自动粘贴并转换
-4. 转换后的 SQL 自动复制到剪贴板
+1. Copy MyBatis log from IDEA console
+2. Enter `mybatis` or `mybatisLog` in uTools
+3. Log will be auto-pasted and converted
+4. Converted SQL is auto-copied to clipboard
 
-## 日志格式示例
+## Log Format Example
 
 ```
 2024-01-15 10:30:00 DEBUG [main] c.e.m.UserMapper.selectById - ==>  Preparing: SELECT * FROM user WHERE id = ? AND name = ?
 2024-01-15 10:30:00 DEBUG [main] c.e.m.UserMapper.selectById - ==> Parameters: 1(Integer), 张三(String)
 ```
 
-转换结果：
+Result:
 ```sql
 SELECT
   *
@@ -59,49 +63,49 @@ WHERE
   AND name = '张三'
 ```
 
-## 更新日志
+## Changelog
 
 ### v0.2.0
-- 新增 11 种数据库方言支持（共 21 种）
-- 修复 NULL 值解析错误（之前会被错误转为 'null' 字符串）
-- 修复空字符串参数处理
-- 修复单引号转义问题（O'Brien -> 'O''Brien'）
-- 改进日期类型参数处理
-- 改进参数解析，支持包含逗号的值
-- 下拉选择器支持搜索过滤
-- 更新 sql-formatter 到最新版本
+- Added 11 new database dialect support (total 21)
+- Fixed NULL value parsing (was incorrectly converted to 'null' string)
+- Fixed empty string parameter handling
+- Fixed single quote escaping (O'Brien -> 'O''Brien')
+- Improved date type parameter handling
+- Improved parameter parsing, supports values containing commas
+- Dropdown selector supports search filtering
+- Updated sql-formatter to latest version
 
 ### v0.1.1
-- 结果增加 SQL 格式化
+- Added SQL formatting to output
 
 ### v0.1.0
-- 修改参数中带有逗号乱参问题
-- 修改关键字匹配
+- Fixed parameter parsing issues with commas
+- Fixed keyword matching
 
 ### v0.0.6
-- 进入插件后自动转换
-- 修改参数前面多余空格
+- Auto-convert after entering plugin
+- Fixed extra spaces before parameters
 
 ### v0.0.5
-- 样式修改
+- Style modifications
 
 ### v0.0.4
-- 字符串类型匹配
+- String type matching
 
 ### v0.0.3
-- 从主窗口跳转到插件时自动取值
-- 转换后自动复制到粘贴板
+- Auto-capture value when jumping from main window to plugin
+- Auto-copy to clipboard after conversion
 
 ### v0.0.2
-- 根据论坛反馈 ctrl+c 复制语句之后, 没有呼出插件问题
+- Fixed issue where plugin wasn't invoked after copying statement with ctrl+c
 
-## 开发
+## Development
 
 ```bash
-# 安装依赖
+# Install dependencies
 npm install
 
-# 运行测试
+# Run tests
 node test.js
 ```
 
