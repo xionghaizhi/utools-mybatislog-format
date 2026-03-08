@@ -12,7 +12,6 @@ Automatically concatenates parameters from MyBatis SQL logs (from IDEA console, 
 - Auto-escape single quotes
 - Auto-copy converted SQL to clipboard
 
-![Downloads](https://img.shields.io/badge/utools%20download-24267-blue)
 ![Downloads](img/img.png)
 ## Supported Database Dialects (21)
 
