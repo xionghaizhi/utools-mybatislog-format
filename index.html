@@ -147,22 +147,16 @@
         }
 
         for (let part of parts) {
-          const parenIdx = part.lastIndexOf('(');
-          const endsWithParen = part.endsWith(')');
-          if (parenIdx > 0 && endsWithParen) {
+          // 从字符串尾部匹配 (Type)，允许 value 内出现括号
+          const typeMatch = part.match(/^(.*)\(([^()]*)\)\s*$/);
+          if (typeMatch) {
             params.push({
-              value: part.substring(0, parenIdx).trim(),
-              type: part.substring(parenIdx + 1, part.length - 1).trim()
+              value: typeMatch[1].trim(),
+              type: typeMatch[2].trim()
             });
-          } else if (parenIdx === 0 && endsWithParen) {
-            // 空字符串参数: (Type)
-            params.push({
-              value: '',
-              type: part.substring(1, part.length - 1).trim()
-            });
-          } else {
-            params.push({ value: part.trim(), type: 'Unknown' });
+            continue;
           }
+          params.push({ value: part.trim(), type: 'Unknown' });
         }
         
         return params;
@@ -320,9 +314,6 @@
             }
             return '?';
           });
-          
-          // 清理多余的方括号（某些日志格式可能有）
-          formattedSql = formattedSql.replace(/\[(.+?)\]/g, '$1');
           
           // 格式化 SQL
           this.result = sqlFormatter.format(formattedSql, {
