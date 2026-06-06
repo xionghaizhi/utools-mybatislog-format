@@ -2,7 +2,7 @@
 
 将 MyBatis SQL 日志（来自 IDEA 控制台、服务器日志等）自动拼接参数，生成可直接执行的 SQL 语句。
 
-[English Version](./README.md)
+[English Version](./README.md) | [uTools 插件市场](https://www.u-tools.cn/plugins/detail/mybatisLog%E6%A0%BC%E5%BC%8F%E5%8C%96/index.html)
 
 ## 功能特点
 
@@ -12,8 +12,15 @@
 - 自动转义单引号
 - 转换后自动复制到剪贴板
 
+## 项目影响
+
+- 由 [xionghaizhi](https://github.com/xionghaizhi) 维护，采用 MIT 协议开源。
+- uTools 公共插件页和 README 徽章显示已有 2.4 万+ 用户/下载。
+- 帮助 Java/MyBatis 后端开发者把框架日志快速转换为可执行 SQL，减少手工匹配占位符和参数的重复调试成本。
+- 仍在持续维护，2026 年已修复方括号参数解析、参数静默丢失等解析边界问题。
 
 ![Downloads](img/img.png)
+
 ## 支持的数据库方言（21种）
 
 | 数据库 | 方言值 |
@@ -101,13 +108,9 @@ WHERE
 
 ## 开发
 
-```bash
-# 安装依赖
-npm install
+这是一个静态 uTools 插件。开发时在 uTools 开发者工具中导入当前目录，修改 `index.html`、`preload.js` 或 `plugin.json` 后重新加载插件即可。
 
-# 运行测试
-node test.js
-```
+核心解析逻辑位于 `index.html` 中的 Vue 方法 `parseParameters` 和 `formatParamValue`。
 
 ## License
 

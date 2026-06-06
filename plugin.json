@@ -1,7 +1,7 @@
 {
 	"pluginName": "mybatisLog格式化",
-	"description": "将idea开发工具中的sql日志自动拼接参数",
-	"homepage": "https://xionghaizhi.github.io",
+	"description": "将 MyBatis SQL 日志自动拼接参数并格式化为可执行 SQL",
+	"homepage": "https://github.com/xionghaizhi/utools-mybatislog-format",
 	"author": "xionghaizhi",
 	"main": "index.html",
 	"preload": "preload.js",

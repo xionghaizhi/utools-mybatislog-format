@@ -1,8 +1,8 @@
-# MyBatis Log Formatter ![下载量](https://img.shields.io/badge/utools%20download-24267-blue)
+# MyBatis Log Formatter ![uTools downloads](https://img.shields.io/badge/utools%20download-24267-blue)
 
 Automatically concatenates parameters from MyBatis SQL logs (from IDEA console, server logs, etc.) to generate directly executable SQL statements.
 
-[中文版](./README_ZH.md)
+[中文版](./README_ZH.md) | [uTools Plugin Store](https://www.u-tools.cn/plugins/detail/mybatisLog%E6%A0%BC%E5%BC%8F%E5%8C%96/index.html)
 
 ## Features
 
@@ -12,7 +12,15 @@ Automatically concatenates parameters from MyBatis SQL logs (from IDEA console, 
 - Auto-escape single quotes
 - Auto-copy converted SQL to clipboard
 
+## Project Impact
+
+- MIT-licensed developer tool maintained by [xionghaizhi](https://github.com/xionghaizhi).
+- Used by the uTools developer community, with 24k+ downloads/users shown by the public plugin listing and README badge.
+- Helps Java/MyBatis backend developers turn noisy framework logs into executable SQL without manually matching placeholders and parameters.
+- Actively maintained, including parser fixes for brackets and parameter-loss edge cases in 2026.
+
 ![Downloads](img/img.png)
+
 ## Supported Database Dialects (21)
 
 | Database | Dialect Value |
@@ -100,13 +108,9 @@ WHERE
 
 ## Development
 
-```bash
-# Install dependencies
-npm install
+This is a static uTools plugin. Import this folder in the uTools developer tools, then reload the plugin after editing `index.html`, `preload.js`, or `plugin.json`.
 
-# Run tests
-node test.js
-```
+The core parser logic lives in the Vue methods `parseParameters` and `formatParamValue` in `index.html`.
 
 ## License
 
